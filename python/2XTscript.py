@@ -16,7 +16,7 @@ airport_disembark = dict(islice(airport_list.items(), 40, 60))
 print(len(airport_embark))
 print(len(airport_disembark))
 
-# Teste, deletar depois 
+# Teste, deletar depois
 # for airport in airport_list:
 #    print("{} Latitude: {} Longitute: {}".format(airport, airport_list[airport]["lat"], airport_list[airport]["lon"]))
 
@@ -48,14 +48,12 @@ lon1 = 0
 lon2 = 0
 
 for a in airport_list:
-    if embark == airport_list[a]:
-        lat1 = airport_list[a][lat]
-        print(lat1)
-        lon1 = airport_list[a][lon]
-        print(lon1)
-    if disembark == airport_list[a]:
-        lat2 = airport_list[a][lat]
-        lon2 = airport_list[a][lon]
+    if embark == a:
+        lat1 = airport_list[a]["lat"]
+        lon1 = airport_list[a]["lon"]
+    if disembark == a:
+        lat2 = airport_list[a]["lat"]
+        lon2 = airport_list[a]["lon"]
 
 linear_distance = haversine(lat1, lon1, lat2, lon2)
 
