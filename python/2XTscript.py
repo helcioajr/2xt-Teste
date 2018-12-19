@@ -15,17 +15,9 @@ airport_list1 = dict(islice(airport_list.items(), 0, 20))
 airport_list2 = dict(islice(airport_list.items(), 40, 60))
 
 
-# Entrada de dados
+# Definicao da data
 date = datetime.now() + timedelta(days=40)
 date = date.date()
-iata1 = input("iata1: ").upper()
-iata2 = input("iata2: ").upper()
-
-url = "http://stub.2xt.com.br/air/search/{}/{}/{}/{}".format(apiKey, iata1, iata2, date)
-
-# Busca a lista de opçoes de voo
-flight_search_response = requests.get(url, auth = ('helcio', 'sejvlD'))
-flight_list = json.loads(flight_search_response.text)
 
 # haversine function roubada daqui https://stackoverflow.com/questions/4913349/haversine-formula-in-python-bearing-and-distance-between-two-gps-points sorry, mas tenho pouco tempo :)
 def haversine(lon1, lat1, lon2, lat2):
@@ -61,8 +53,8 @@ def getLinearDistance(iata1, iata2, airport_list):
 
 # Classe com os dados dos voos
 class Flight:
-    departure = ""
-    arrival = ""
+    departure_time = ""
+    arrival_time = ""
     aircraft= ""
     aircraftManufacturer= ""
     avgSpeed=0.0
@@ -85,8 +77,8 @@ def getFlightData(linear_distance, flight_list):
         arrival_time = datetime.strptime(flight["arrival_time"], "%Y-%m-%dT%H:%M:%S")
         departure_time = datetime.strptime(flight["departure_time"], "%Y-%m-%dT%H:%M:%S")
         time_diff = abs(departure_time - arrival_time)
-        f.arrival = arrival_time
-        f.departure = departure_time
+        f.arrival_time = arrival_time
+        f.departure_time = departure_time
         f.avgSpeed = getAvgSpeed(linear_distance, time_diff)
         f.farePerKM = format(float(linear_distance) / float(flight["fare_price"]), '.2f')
         f.aircraft = flight["aircraft"]["model"]
@@ -96,8 +88,20 @@ def getFlightData(linear_distance, flight_list):
 
     return l
 
-linear_distance = getLinearDistance(iata1, iata2, airport_list)
-flight_data_List = getFlightData(linear_distance, flight_list)
+for a1 in airport_list1:
+    for a2 in airport_list2:
 
-for f in flight_data_List:
-    print("Saida: {}  Chegada: {} Aeronave: {} {} - Velocidade Aprox.: {} KM/h - Valor por KM: BRL {}".format(f.departure, f.arrival, f.aircraft, f.aircraftManufacturer, f.avgSpeed, f.farePerKM))
+        iata1 = a1
+        iata2 = a2
+
+        url = "http://stub.2xt.com.br/air/search/{}/{}/{}/{}".format(apiKey, iata1, iata2, date)
+
+        # Busca a lista de opçoes de voo
+        flight_search_response = requests.get(url, auth = ('helcio', 'sejvlD'))
+        flight_list = json.loads(flight_search_response.text)
+
+        linear_distance = getLinearDistance(iata1, iata2, airport_list)
+        flight_data_List = getFlightData(linear_distance, flight_list)
+
+        for f in flight_data_List:
+            print("Partida: {} Destino: {} Saida: {}  Chegada: {} Aeronave: {} {} - Velocidade Aprox.: {} KM/h - Valor por KM: BRL {}".format(a1, a2, f.departure_time, f.arrival_time, f.aircraft, f.aircraftManufacturer, f.avgSpeed, f.farePerKM))
