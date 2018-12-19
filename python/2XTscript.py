@@ -104,4 +104,5 @@ for a1 in airport_list1:
         flight_data_List = getFlightData(linear_distance, flight_list)
 
         for f in flight_data_List:
-            print("Partida: {} Destino: {} Saida: {}  Chegada: {} Aeronave: {} {} - Velocidade Aprox.: {} KM/h - Valor por KM: BRL {}".format(a1, a2, f.departure_time, f.arrival_time, f.aircraft, f.aircraftManufacturer, f.avgSpeed, f.farePerKM))
+            t = "Partida: {} Destino: {} Saida: {}  Chegada: {} Aeronave: {} {} - Velocidade Aprox.: {} KM/h - Valor por KM: BRL {}"
+            print(t.format(a1, a2, f.departure_time, f.arrival_time, f.aircraftManufacturer, f.aircraft, f.avgSpeed, f.farePerKM))
