@@ -1,5 +1,5 @@
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 from itertools import islice
 from math import radians, cos, sin, asin, sqrt
@@ -11,22 +11,17 @@ airport_list_response = requests.get('http://stub.2xt.com.br/air/airports/phnvlD
 airport_list = json.loads(airport_list_response.text)
 
 # Separa a lista em 2 listas de 20 aeroportos
-airport_embark_list = dict(islice(airport_list.items(), 0, 20))
-airport_disembark_list = dict(islice(airport_list.items(), 40, 60))
+airport_list1 = dict(islice(airport_list.items(), 0, 20))
+airport_list2 = dict(islice(airport_list.items(), 40, 60))
 
-print(len(airport_embark))
-print(len(airport_disembark))
 
-# Teste, deletar depois
-# for airport in airport_list:
-#    print("{} Latitude: {} Longitute: {}".format(airport, airport_list[airport]["lat"], airport_list[airport]["lon"]))
+# Entrada de dados
+date = datetime.now() + timedelta(days=40)
+date = date.date()
+iata1 = input("iata1: ").upper()
+iata2 = input("iata2: ").upper()
 
-# date = input("Date (yyyy-mm-dd): ")
-date = "2019-01-01"
-embark = input("embark iata: ").upper()
-disembark = input("disembark iata: ").upper()
-
-url = "http://stub.2xt.com.br/air/search/{}/{}/{}/{}".format(apiKey, embark, disembark, date)
+url = "http://stub.2xt.com.br/air/search/{}/{}/{}/{}".format(apiKey, iata1, iata2, date)
 
 # Busca a lista de opçoes de voo
 flight_search_response = requests.get(url, auth = ('helcio', 'sejvlD'))
@@ -46,7 +41,7 @@ def haversine(lon1, lat1, lon2, lat2):
     return c * r
 
 # Retorna a distancia linear
-def getLinearDistance(embark, disembark, airport_list):
+def getLinearDistance(iata1, iata2, airport_list):
 
     lat1 = 0
     lat2 = 0
@@ -54,10 +49,10 @@ def getLinearDistance(embark, disembark, airport_list):
     lon2 = 0
 
     for a in airport_list:
-        if embark == a:
+        if iata1 == a:
             lat1 = airport_list[a]["lat"]
             lon1 = airport_list[a]["lon"]
-        if disembark == a:
+        if iata2 == a:
             lat2 = airport_list[a]["lat"]
             lon2 = airport_list[a]["lon"]
 
@@ -66,30 +61,43 @@ def getLinearDistance(embark, disembark, airport_list):
 
 # Classe com os dados dos voos
 class Flight:
+    departure = ""
+    arrival = ""
     aircraft= ""
     aircraftManufacturer= ""
-    avgSpeed=0
-    farePerKM=0
+    avgSpeed=0.0
+    farePerKM=0.0
 
 flight_data_List = []
+
+# Calcula a velocidade aproximada
+def getAvgSpeed(linear_distance, time_diff):
+    (h, m, s) = str(time_diff).split(':')
+    t = float(h) + float(m)/60 + float(s)/3600
+    avgSpeed = float(linear_distance) / t
+    return format(avgSpeed, '.2f')
 
 # Retorna a distancia, velocidade aproximada e valor por km
 def getFlightData(linear_distance, flight_list):
     l = []
-    f = Flight()
     for flight in flight_list["options"]:
+        f = Flight()
         arrival_time = datetime.strptime(flight["arrival_time"], "%Y-%m-%dT%H:%M:%S")
         departure_time = datetime.strptime(flight["departure_time"], "%Y-%m-%dT%H:%M:%S")
-        f.speed = float(linear_distance) / arrival_time.time().minute - departure_time.time().minute
-        f.farePerKM = float(linear_distance) / float(flight["fare_price"])
+        time_diff = abs(departure_time - arrival_time)
+        f.arrival = arrival_time
+        f.departure = departure_time
+        f.avgSpeed = getAvgSpeed(linear_distance, time_diff)
+        f.farePerKM = format(float(linear_distance) / float(flight["fare_price"]), '.2f')
         f.aircraft = flight["aircraft"]["model"]
         f.aircraftManufacturer = flight["aircraft"]["manufacturer"]
+
         l.append(f)
 
     return l
 
-linear_distance = getLinearDistance(embark, disembark, airport_list)
+linear_distance = getLinearDistance(iata1, iata2, airport_list)
 flight_data_List = getFlightData(linear_distance, flight_list)
 
 for f in flight_data_List:
-    print("Aeronave: {} {} - Velocidade Aprox.: {} KM/m - Valor por KM: BRL {}".format(f.aircraft, f.aircraftManufacturer, f.avgSpeed, f.farePerKM))
+    print("Saida: {}  Chegada: {} Aeronave: {} {} - Velocidade Aprox.: {} KM/h - Valor por KM: BRL {}".format(f.departure, f.arrival, f.aircraft, f.aircraftManufacturer, f.avgSpeed, f.farePerKM))
