@@ -1,0 +1,8 @@
+Link enunciado:
+http://stub.2xt.com.br/phnvlDweeuDLvjSqCqre9mOzvKKdzMmw
+
+Link API mockup de voos
+http://stub.2xt.com.br/air/search
+
+Link API mockup de aeroportos domesticos
+http://stub.2xt.com.br/air/airports/phnvlDweeuDLvjSqCqre9mOzvKKdzMmw
